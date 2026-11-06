@@ -335,5 +335,12 @@
   else { requestAnimationFrame(loop); }
 
   /* expose for debugging / future use */
-  window.Forest = { scene: scene, camera: camera, renderer: renderer };
+  var _sv = new THREE.Vector3();
+  /* screen position (css px) of the hero sword, used as the origin of the light beams */
+  function swordScreen() {
+    if (!sword) return null;
+    camera.updateMatrixWorld(true); sword.getWorldPosition(_sv); _sv.project(camera);
+    return { x: (_sv.x * 0.5 + 0.5) * window.innerWidth, y: (-_sv.y * 0.5 + 0.5) * window.innerHeight };
+  }
+  window.Forest = { scene: scene, camera: camera, renderer: renderer, swordScreen: swordScreen };
 })();
