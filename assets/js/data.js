@@ -98,7 +98,7 @@ window.SITE = {
   /* ---------------- PROJECTS ---------------- */
   projects: [
     {
-      id: 'agency818', num: 11, featured: true, wide: true,
+      id: 'agency818', num: 11, featured: true, scroll: 'agency818-scroll',
       title: '818 AI Agency Website',
       tagline: 'The company website for an AI and technology agency serving the UAE and Gulf — with a three.js 3D logo.',
       status: 'Current · client work',
@@ -250,4 +250,4 @@ window.SITE = {
 };
 
 /* Convenience: cover = first gallery image */
-window.SITE.projects.forEach(function (p) { p.cover = p.gallery[0]; });
+window.SITE.projects.forEach(function (p) { p.cover = p.scroll || p.gallery[0]; });
