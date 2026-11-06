@@ -248,9 +248,17 @@
       if (box._rv) return; box._rv = true;
       var kids = Array.prototype.slice.call(box.children);
       if (!hasGSAP || reduce) { kids.forEach(function (k) { k.style.opacity = 1; }); return; }
-      gsap.set(kids, { y: 60, scale: .96 });
+      /* experiment: cards rise out of the dark (blur + tilt), then ease away as they leave the top of the screen */
+      gsap.set(kids, { y: 90, scale: .94, rotationX: 14, transformPerspective: 900, transformOrigin: '50% 100%', filter: 'blur(8px)' });
       ScrollTrigger.create({ trigger: box, start: 'top 88%', once: true, onEnter: function () {
-        gsap.to(kids, { opacity: 1, y: 0, scale: 1, duration: 1, stagger: .12, ease: 'power3.out' });
+        gsap.to(kids, { opacity: 1, y: 0, scale: 1, rotationX: 0, filter: 'blur(0px)', duration: 1.2, stagger: .14, ease: 'power3.out',
+          onComplete: function () {
+            kids.forEach(function (k) {
+              k.style.filter = '';
+              gsap.fromTo(k, { opacity: 1, y: 0, scale: 1 }, { opacity: .1, y: -70, scale: .95, ease: 'none', immediateRender: false,
+                scrollTrigger: { trigger: k, start: 'bottom 32%', end: 'bottom -8%', scrub: .5 } });
+            });
+          } });
       } });
     });
     $$('[data-parallax]', root).forEach(function (el) {
@@ -263,8 +271,13 @@
       var end = parseFloat(el.getAttribute('data-count')), suf = el.getAttribute('data-suffix') || '';
       if (!hasGSAP || reduce) { el.textContent = end + suf; return; }
       var o = { v: 0 }; el.textContent = '0' + suf;
-      ScrollTrigger.create({ trigger: el, start: 'top 92%', once: true, onEnter: function () {
-        gsap.to(o, { v: end, duration: 2.2, ease: 'power2.out', onUpdate: function () { el.textContent = Math.round(o.v) + suf; } });
+      var tile = el.parentElement, bar = null;
+      if (tile && tile.classList.contains('stat')) { bar = document.createElement('i'); bar.className = 'stat-bar'; tile.appendChild(bar); gsap.set(bar, { scaleX: 0 }); gsap.set(tile, { opacity: 0, y: 36, filter: 'blur(6px)' }); }
+      ScrollTrigger.create({ trigger: el, start: 'top 94%', once: true, onEnter: function () {
+        if (tile && bar) gsap.to(tile, { opacity: 1, y: 0, filter: 'blur(0px)', duration: .9, ease: 'power3.out', delay: (Array.prototype.indexOf.call(tile.parentElement.children, tile)) * .12, onComplete: function () { tile.style.filter = ''; } });
+        if (bar) gsap.to(bar, { scaleX: 1, duration: 2.4, ease: 'expo.out', delay: .1 });
+        gsap.to(o, { v: end, duration: 2.6, ease: 'expo.out', delay: .15, onUpdate: function () { el.textContent = Math.round(o.v) + suf; },
+          onComplete: function () { gsap.fromTo(el, { scale: 1.14 }, { scale: 1, duration: .6, ease: 'back.out(3)' }); } });
       } });
     });
     $$('.pips', root).forEach(function (p) {
