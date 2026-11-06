@@ -35,16 +35,17 @@
   }
 
   /* x position of strand j of beam i at progress t (0 = spark, 1 = contact card), document y, time s.
-     Waves use document pixels so the curves keep the same shape however long the page is. */
+     The whole bundle follows a big letter-S wave that travels down the page; the beams are phase-shifted
+     copies of it, so they fan and cross like one flowing sheet of light. Ends taper into the spark / card. */
   function xAt(i, j, t, y, s) {
-    var env = Math.sin(Math.PI * Math.min(1, t));          // 0 at both ends, so ribbons start and end together
-    var lane = (i - (N - 1) / 2) / ((N - 1) / 2);
+    var env = Math.min(1, t / 0.1, (1 - t) / 0.1); env = Math.max(0, env); env = env * env * (3 - 2 * env);
     var base = x0 + (xT - x0) * ease(t);
-    var spread = W * (mobile ? 0.26 : 0.3) * Math.pow(env, 0.8) * (0.65 + 0.35 * Math.sin(y / 1100 + PH[i] + s * 0.22));
-    var wob = W * (mobile ? 0.1 : 0.085) * Math.pow(env, 0.6) * Math.sin(y / 560 + PH[i] * 2 + s * 0.4);
+    var lam = mobile ? 1000 : 1300, amp = W * (mobile ? 0.27 : 0.3) * (0.92 + 0.08 * Math.sin(i * 2.3));
+    var wave = -Math.sin(((y - y0) / lam) * 6.2832 - s * 0.55 + i * 0.34);          // minus: first sweep goes left, away from the sword
+    var lane = (i - (N - 1) / 2) / ((N - 1) / 2);
     var off = (j - (M - 1) / 2) / ((M - 1) / 2);
-    var width = W * (mobile ? 0.07 : 0.06) * (0.3 + 0.7 * env) * Math.cos(y / 330 + i * 1.7 + s * 0.45);   // twisting ribbon
-    return base + lane * spread + wob + off * width;
+    var width = W * (mobile ? 0.06 : 0.05) * (0.35 + 0.65 * env) * Math.cos(y / 330 + i * 1.7 + s * 0.45);   // twisting ribbon
+    return base + amp * env * wave + lane * W * 0.035 * env + off * width;
   }
 
   function draw(now) {
